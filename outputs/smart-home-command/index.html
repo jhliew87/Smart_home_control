@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f6f8">
+    <title>House Command</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="side-panel" aria-label="Primary">
+        <div class="brand">
+          <span class="brand-mark" data-icon="home" aria-hidden="true"></span>
+          <span>
+            <strong>House Command</strong>
+            <small id="connectionLabel">Local controls</small>
+          </span>
+        </div>
+
+        <nav class="nav-tabs" aria-label="Views">
+          <button class="nav-tab is-active" data-view="overview" type="button">
+            <span data-icon="layout"></span>
+            <span>Overview</span>
+          </button>
+          <button class="nav-tab" data-view="devices" type="button">
+            <span data-icon="sliders"></span>
+            <span>Devices</span>
+          </button>
+          <button class="nav-tab" data-view="diary" type="button">
+            <span data-icon="calendar"></span>
+            <span>Diary</span>
+          </button>
+          <button class="nav-tab" data-view="automations" type="button">
+            <span data-icon="spark"></span>
+            <span>Rules</span>
+          </button>
+          <button class="nav-tab" data-view="integrations" type="button">
+            <span data-icon="settings"></span>
+            <span>Connect</span>
+          </button>
+        </nav>
+
+        <div class="home-state">
+          <span class="status-dot" id="statusDot"></span>
+          <div>
+            <strong id="modeLabel">Home</strong>
+            <span id="statusSummary">Ready</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-stage">
+        <header class="top-bar">
+          <div>
+            <p class="eyebrow" id="dateLabel">Today</p>
+            <h1>Home Control</h1>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="refreshButton" type="button" title="Refresh" aria-label="Refresh">
+              <span data-icon="refresh"></span>
+            </button>
+            <button class="icon-button" id="exportButton" type="button" title="Export data" aria-label="Export data">
+              <span data-icon="download"></span>
+            </button>
+          </div>
+        </header>
+
+        <section class="view is-active" id="overviewView" aria-labelledby="overviewTitle">
+          <div class="mode-strip" aria-label="Modes">
+            <div>
+              <h2 id="overviewTitle">Control Center</h2>
+              <p id="nextEventSummary">No upcoming diary items</p>
+            </div>
+            <div class="segmented-control" id="modeButtons" role="group" aria-label="Home mode"></div>
+          </div>
+
+          <div class="quick-grid">
+            <button class="quick-action" data-scene="home" type="button">
+              <span data-icon="home"></span>
+              <strong>Home</strong>
+              <small>Lights, comfort, unlocked routine</small>
+            </button>
+            <button class="quick-action" data-scene="away" type="button">
+              <span data-icon="shield"></span>
+              <strong>Away</strong>
+              <small>Locks, sensors, lower heating</small>
+            </button>
+            <button class="quick-action" data-scene="sleep" type="button">
+              <span data-icon="moon"></span>
+              <strong>Sleep</strong>
+              <small>Dim, lock, quiet climate</small>
+            </button>
+            <button class="quick-action" data-scene="movie" type="button">
+              <span data-icon="media"></span>
+              <strong>Movie</strong>
+              <small>Low lights, blinds down, media on</small>
+            </button>
+          </div>
+
+          <div class="overview-grid">
+            <section class="panel weather-panel" aria-labelledby="weatherTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Weather</p>
+                  <h2 id="weatherTitle">Local Forecast</h2>
+                </div>
+                <button class="icon-button" id="locateButton" type="button" title="Use current location" aria-label="Use current location">
+                  <span data-icon="map-pin"></span>
+                </button>
+              </div>
+              <form class="compact-form" id="weatherForm">
+                <label for="weatherPlace">Place</label>
+                <div class="input-row">
+                  <input id="weatherPlace" name="weatherPlace" type="search" autocomplete="postal-code" placeholder="Town, city, or postcode">
+                  <button class="text-button" type="submit">Set</button>
+                </div>
+              </form>
+              <div id="weatherContent" class="weather-content"></div>
+            </section>
+
+            <section class="panel" aria-labelledby="diaryTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Diary</p>
+                  <h2 id="diaryTitle">Next Up</h2>
+                </div>
+                <button class="icon-button" data-view-jump="diary" type="button" title="Open diary" aria-label="Open diary">
+                  <span data-icon="calendar"></span>
+                </button>
+              </div>
+              <div id="miniDiary" class="mini-list"></div>
+            </section>
+
+            <section class="panel" aria-labelledby="insightsTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Automation</p>
+                  <h2 id="insightsTitle">Suggested</h2>
+                </div>
+                <span class="panel-badge" id="insightCount">0</span>
+              </div>
+              <div id="insightList" class="insight-list"></div>
+            </section>
+          </div>
+
+          <section class="heating-section" aria-labelledby="heatingTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Heating</p>
+                <h2 id="heatingTitle">Room Temperatures</h2>
+              </div>
+              <button class="text-button" id="syncHeatingButton" type="button">Sync tado</button>
+            </div>
+            <div class="heating-plan" id="heatingPlan"></div>
+            <div class="heating-grid" id="heatingGrid"></div>
+          </section>
+
+          <section class="camera-section" aria-labelledby="cameraTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Cameras</p>
+                <h2 id="cameraTitle">Blink Cameras</h2>
+              </div>
+              <button class="text-button" id="syncBlinkButton" type="button">Sync Blink</button>
+            </div>
+            <div class="camera-grid" id="cameraGrid"></div>
+          </section>
+
+          <section class="device-section" aria-labelledby="roomsTitle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Rooms</p>
+                <h2 id="roomsTitle">Devices</h2>
+              </div>
+              <div class="room-filter" id="roomFilters"></div>
+            </div>
+            <div class="device-grid" id="deviceGrid"></div>
+          </section>
+        </section>
+
+        <section class="view" id="devicesView" aria-labelledby="allDevicesTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Every controllable item</p>
+              <h2 id="allDevicesTitle">Device Matrix</h2>
+            </div>
+            <div class="bulk-actions">
+              <button class="text-button" id="allOffButton" type="button">All Off</button>
+              <button class="text-button" id="secureButton" type="button">Secure</button>
+            </div>
+          </div>
+          <div class="matrix" id="deviceMatrix"></div>
+        </section>
+
+        <section class="view" id="diaryView" aria-labelledby="diaryManagerTitle">
+          <div class="diary-layout">
+            <section class="panel" aria-labelledby="diaryManagerTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Schedule</p>
+                  <h2 id="diaryManagerTitle">Diary</h2>
+                </div>
+                <div class="inline-buttons">
+                  <button class="icon-button" id="importDiaryButton" type="button" title="Import ICS" aria-label="Import ICS">
+                    <span data-icon="upload"></span>
+                  </button>
+                  <button class="icon-button" id="exportDiaryButton" type="button" title="Export ICS" aria-label="Export ICS">
+                    <span data-icon="download"></span>
+                  </button>
+                  <button class="icon-button" id="syncGoogleDiaryButton" type="button" title="Sync Google Calendar" aria-label="Sync Google Calendar">
+                    <span data-icon="calendar"></span>
+                  </button>
+                  <input class="visually-hidden" id="icsInput" type="file" accept=".ics,text/calendar">
+                </div>
+              </div>
+              <form class="event-form" id="eventForm">
+                <label>
+                  <span>Title</span>
+                  <input id="eventTitle" required placeholder="Dinner, work, travel">
+                </label>
+                <label>
+                  <span>Date</span>
+                  <input id="eventDate" type="date" required>
+                </label>
+                <label>
+                  <span>Time</span>
+                  <input id="eventTime" type="time" required>
+                </label>
+                <label>
+                  <span>Type</span>
+                  <select id="eventType">
+                    <option value="home">Home</option>
+                    <option value="away">Away</option>
+                    <option value="work">Work</option>
+                    <option value="guest">Guest</option>
+                    <option value="sleep">Sleep</option>
+                  </select>
+                </label>
+                <button class="primary-button" type="submit">
+                  <span data-icon="plus"></span>
+                  <span>Add</span>
+                </button>
+              </form>
+              <div id="diaryList" class="diary-list"></div>
+            </section>
+
+            <section class="panel" aria-labelledby="diaryRulesTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Diary links</p>
+                  <h2 id="diaryRulesTitle">Routines</h2>
+                </div>
+              </div>
+              <div id="diaryRoutineList" class="routine-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="automationsView" aria-labelledby="rulesTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Weather and diary aware</p>
+              <h2 id="rulesTitle">Automation Rules</h2>
+            </div>
+          </div>
+          <div class="automation-grid" id="automationGrid"></div>
+        </section>
+
+        <section class="view" id="integrationsView" aria-labelledby="connectTitle">
+          <div class="connect-layout">
+            <section class="panel" aria-labelledby="connectTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Local hub</p>
+                  <h2 id="connectTitle">Home Assistant</h2>
+                </div>
+                <span class="panel-badge" id="haStatus">Not connected</span>
+              </div>
+              <form class="integration-form" id="haForm">
+                <label>
+                  <span>Base URL</span>
+                  <input id="haUrl" type="url" placeholder="http://homeassistant.local:8123">
+                </label>
+                <label>
+                  <span>Long-lived access token</span>
+                  <input id="haToken" type="password" autocomplete="off" placeholder="Paste token">
+                </label>
+                <label class="check-line">
+                  <input id="rememberToken" type="checkbox">
+                  <span>Store token on this device</span>
+                </label>
+                <div class="inline-buttons">
+                  <button class="primary-button" type="submit">
+                    <span data-icon="refresh"></span>
+                    <span>Sync</span>
+                  </button>
+                  <button class="text-button" id="clearHaButton" type="button">Clear</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="panel" aria-labelledby="tadoTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Smart thermostat</p>
+                  <h2 id="tadoTitle">tado Heating</h2>
+                </div>
+                <span class="panel-badge" id="tadoStatus">Not linked</span>
+              </div>
+              <div class="integration-form">
+                <div class="auth-box" id="tadoAuthBox">
+                  <div class="empty-state">Start a tado link to approve this app in your tado account.</div>
+                </div>
+                <label class="check-line">
+                  <input id="rememberTadoToken" type="checkbox">
+                  <span>Store tado link on this device</span>
+                </label>
+                <div class="inline-buttons">
+                  <button class="primary-button" id="startTadoButton" type="button">
+                    <span data-icon="spark"></span>
+                    <span>Start Link</span>
+                  </button>
+                  <button class="text-button" id="finishTadoButton" type="button">Finish Link</button>
+                  <button class="text-button" id="syncTadoButton" type="button">Sync Heating</button>
+                  <button class="text-button" id="clearTadoButton" type="button">Clear</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel" aria-labelledby="googleCalendarTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Diary source</p>
+                  <h2 id="googleCalendarTitle">Google Calendar</h2>
+                </div>
+                <span class="panel-badge" id="googleCalendarStatus">Not linked</span>
+              </div>
+              <form class="integration-form" id="googleCalendarForm">
+                <label>
+                  <span>Secret iCal URL</span>
+                  <input id="googleCalendarUrl" type="url" autocomplete="off" placeholder="https://calendar.google.com/calendar/ical/.../basic.ics">
+                </label>
+                <label class="check-line">
+                  <input id="rememberGoogleCalendarUrl" type="checkbox">
+                  <span>Store calendar link on this device</span>
+                </label>
+                <div class="inline-buttons">
+                  <button class="primary-button" type="submit">
+                    <span data-icon="calendar"></span>
+                    <span>Sync Calendar</span>
+                  </button>
+                  <button class="text-button" id="clearGoogleCalendarButton" type="button">Clear</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="panel" aria-labelledby="blinkTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Cloud camera</p>
+                  <h2 id="blinkTitle">Blink Cameras</h2>
+                </div>
+                <span class="panel-badge" id="blinkStatus">Not synced</span>
+              </div>
+              <div class="data-actions">
+                <button class="primary-button" id="connectBlinkButton" type="button">
+                  <span data-icon="refresh"></span>
+                  <span>Sync Blink</span>
+                </button>
+                <button class="text-button" id="openHaBlinkButton" type="button">Home Assistant</button>
+              </div>
+              <p class="fine-print">Blink camera access is bridged through Home Assistant.</p>
+            </section>
+
+            <section class="panel" aria-labelledby="dataTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Portable setup</p>
+                  <h2 id="dataTitle">App Data</h2>
+                </div>
+              </div>
+              <div class="data-actions">
+                <button class="text-button" id="resetDemoButton" type="button">Reset Local Devices</button>
+                <button class="text-button danger" id="clearAllButton" type="button">Clear App Data</button>
+              </div>
+              <p class="fine-print">Weather place, diary entries, local devices, and saved settings stay in this browser.</p>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+  </body>
+</html>
